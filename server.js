@@ -11,17 +11,17 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ⚠️ Firebase desativado temporariamente para testes
+// ⚠️ Firebase desativado temporariamente
 console.log("⚠️ Firebase desativado para testes iniciais");
 const realtimeDB = null;
 
-// ✅ CORREÇÃO CRÍTICA: Inicializar o banco de dados
+// ✅ SOLUÇÃO: SQLite EM MEMÓRIA (compatível com Vercel)
 let db;
 try {
-  const dbPath = path.join('/tmp', 'loja.db');
-  db = new sqlite3.Database(dbPath); // ← ESTA LINHA ESTAVA FALTANDO!
+  // ⚡ MUDANÇA CRÍTICA: Usar memória instead de arquivo
+  db = new sqlite3.Database(':memory:'); 
   
-  console.log("✅ SQLite conectado em:", dbPath);
+  console.log("✅ SQLite em MEMÓRIA conectado! (compatível com Vercel)");
   
   db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
@@ -50,16 +50,25 @@ try {
     )`);
     
     // Inserir alguns dados de teste
-    db.run(`INSERT OR IGNORE INTO produtos (nome, descricao, preco, quantidade, categoria) 
-            VALUES ('Produto Teste', 'Descrição teste', 29.99, 10, 'Roupas')`);
+    db.run(`INSERT INTO produtos (nome, descricao, preco, quantidade, categoria) 
+            VALUES ('Camiseta Básica', 'Camiseta 100% algodão', 29.99, 50, 'Roupas'),
+                   ('Calça Jeans', 'Calça jeans masculina', 89.90, 30, 'Roupas'),
+                   ('Tênis Esportivo', 'Tênis para corrida', 129.90, 20, 'Calçados')`);
     
-    console.log("✅ Tabelas criadas/verificadas com sucesso!");
+    // Usuário de teste
+    const hash = bcrypt.hashSync("123456", 10);
+    db.run(`INSERT OR IGNORE INTO usuarios (nome, email, senha, role) 
+            VALUES ('Admin', 'admin@teste.com', ?, 'admin')`, [hash]);
+    
+    console.log("✅ Tabelas e dados de teste criados com sucesso!");
   });
 } catch (dbError) {
   console.error("❌ Erro ao conectar SQLite:", dbError.message);
+  // Fallback: objeto vazio para não quebrar
+  db = {};
 }
 
-// Configuração do Multer
+// ✅ Multer ajustado para /tmp (compatível com Vercel)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = '/tmp/uploads';
@@ -82,24 +91,46 @@ app.get("/", (req, res) => {
   res.json({ 
     message: "🚀 API Mix Modas Online!",
     status: "success",
-    database: db ? "connected" : "disconnected",
-    timestamp: new Date().toISOString()
+    database: "sqlite-memory",
+    timestamp: new Date().toISOString(),
+    note: "Banco em memória - dados resetam a cada deploy"
   });
 });
 
 // 🩺 Health check
 app.get("/api/health", (req, res) => {
-  res.json({ 
-    status: "healthy",
-    database: db ? "connected" : "disconnected",
-    firebase: "disabled",
-    timestamp: new Date().toISOString()
-  });
+  // Testar conexão com banco
+  if (db && db.all) {
+    db.get("SELECT COUNT(*) as count FROM produtos", (err, row) => {
+      if (err) {
+        res.json({ 
+          status: "error", 
+          database: "disconnected",
+          error: err.message 
+        });
+      } else {
+        res.json({ 
+          status: "healthy", 
+          database: "connected",
+          produtos_count: row.count,
+          type: "sqlite-memory"
+        });
+      }
+    });
+  } else {
+    res.json({ 
+      status: "degraded", 
+      database: "disconnected",
+      note: "Usando fallback em memória"
+    });
+  }
 });
 
 // 📦 GET - listar produtos
 app.get("/api/produtos", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
+  if (!db || !db.all) {
+    return res.status(500).json({ error: "Banco de dados não disponível" });
+  }
   
   const categoria = req.query.categoria;
   const sql = categoria
@@ -118,7 +149,9 @@ app.get("/api/produtos", (req, res) => {
 
 // ➕ POST - criar produto
 app.post("/api/produtos", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
+  if (!db || !db.run) {
+    return res.status(500).json({ error: "Banco de dados não disponível" });
+  }
 
   const contentType = req.headers["content-type"] || "";
   const isMultipart = contentType.includes("multipart/form-data");
@@ -154,7 +187,11 @@ app.post("/api/produtos", (req, res) => {
           imagem,
         };
 
-        res.json({ success: true, produto });
+        res.json({ 
+          success: true, 
+          produto,
+          warning: "Dados em memória - serão perdidos no próximo deploy"
+        });
       }
     );
   };
@@ -169,9 +206,11 @@ app.post("/api/produtos", (req, res) => {
   }
 });
 
-// 👤 Cadastro de usuários (simplificado)
+// 👤 Cadastro de usuários
 app.post("/api/cadastro", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
+  if (!db || !db.run) {
+    return res.status(500).json({ error: "Banco de dados não disponível" });
+  }
 
   const { nome, email, senha } = req.body;
   if (!nome || !email || !senha) {
@@ -187,14 +226,20 @@ app.post("/api/cadastro", (req, res) => {
       if (err) {
         return res.status(500).json({ error: "Email já cadastrado" });
       }
-      res.json({ success: true, message: "Usuário cadastrado com sucesso" });
+      res.json({ 
+        success: true, 
+        message: "Usuário cadastrado com sucesso",
+        warning: "Dados em memória - serão perdidos no próximo deploy"
+      });
     }
   );
 });
 
 // 🔐 Login
 app.post("/api/login", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
+  if (!db || !db.get) {
+    return res.status(500).json({ error: "Banco de dados não disponível" });
+  }
 
   const { email, senha } = req.body;
   if (!email || !senha) {
@@ -207,7 +252,12 @@ app.post("/api/login", (req, res) => {
 
     bcrypt.compare(senha, user.senha, (err, result) => {
       if (result) {
-        res.json({ success: true, email: user.email, role: user.role });
+        res.json({ 
+          success: true, 
+          email: user.email, 
+          role: user.role,
+          nome: user.nome
+        });
       } else {
         res.status(401).json({ error: "Credenciais inválidas" });
       }
