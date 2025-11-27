@@ -1,0 +1,17 @@
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f6f8fb;--card:#ffffff;--text:#263238;--muted:#6b7280;--primary:#0b5ea6;--accent:#ff8a4b}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);padding:28px}
+.form-container{max-width:920px;margin:18px auto;background:var(--card);padding:22px;border-radius:12px;box-shadow:0 12px 30px rgba(10,20,30,0.06)}
+.form-container h1{font-size:1.3rem;margin-bottom:16px;color:var(--primary)}
+.produto-form{display:flex;flex-direction:column;gap:12px}
+.form-row{display:flex;flex-direction:column}
+.form-row.group{display:flex;gap:12px}
+.form-row label{font-size:0.9rem;margin-bottom:6px;color:var(--muted)}
+.produto-form input[type="text"],.produto-form input[type="number"],.produto-form select,.produto-form textarea{padding:10px;border-radius:10px;border:1px solid #e6eef8}
+.produto-form textarea{min-height:110px;resize:vertical}
+.form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:6px}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.secondary{background:#fff;border:1px solid #e6eef8;color:var(--primary)}
+
+@media (max-width:720px){.form-row.group{flex-direction:column}}

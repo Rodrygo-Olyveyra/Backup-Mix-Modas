@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista Produtos</title>
+  <link rel="stylesheet" href="/static/css/style_lista_produtos.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="title">Lista de Produtos</div>
+  <div class="actions">
+    <input id="busca" placeholder="Buscar produtos..." aria-label="Buscar produtos">
+    <button id="btnAtualizar" class="btn primary">Atualizar lista</button>
+    <a class="btn secondary" href="/templates/cadastro_produtos.html">+ Cadastrar Produto</a>
+  </div>
+</header>
+
+<main class="produtos-area">
+  <table id="tabela" class="produtos-table">
+    <thead>
+      <tr>
+        <th>Imagem</th>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Preço</th>
+        <th>Qtd</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<aside id="menuLateralAdmin">
+  <h3>⚙️ Modo Admin</h3>
+  <a href="/templates/lista_produtos.html">🧾 Lista de Produtos</a>
+  <a href="/templates/cadastro_produtos.html">➕ Cadastrar Produto</a>
+  <button id="logoutAdmin">🚪 Sair</button>
+</aside>
+
+<script>
+  const usuarioLogado = localStorage.getItem('usuarioLogado');
+  const role = localStorage.getItem('userRole');
+  if (!usuarioLogado || role !== 'admin') {
+    alert('Acesso negado! Você precisa estar logado como admin.');
+    window.location.href = '/templates/index.html';
+  } else {
+    document.getElementById('menuLateralAdmin').style.display = 'flex';
+    document.body.classList.add('menu-ativo');
+  }
+
+  document.getElementById('logoutAdmin').addEventListener('click', () => {
+    localStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('nomeUsuario');
+    window.location.href = '/templates/tela_login.html';
+  });
+
+ 
+</script>
+
+<script src="/static/js/lista_produtos.js"></script>

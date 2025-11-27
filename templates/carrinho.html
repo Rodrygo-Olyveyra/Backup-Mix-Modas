@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style_carrinho.css">
+    <title>Carrinho - Mix-Modas</title>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="/templates/index.html" style="color: white; text-decoration: none;">
+                <img src="/static/css/logo-mixmodas.png" alt="Mix-Modas" class="logo-img" style="height: 35px;">
+            </a>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="O que você procura hoje?" id="searchInput">
+            <button onclick="pesquisar()">🔍</button>
+        </div>
+        <div class="icons">
+            <a href="/templates/lista_desejos.html">❤️ Lista de Desejos</a>
+            <a href="/templates/tela_login.html">👤 Entrar</a>
+            <a href="/templates/carrinho.html">🛒 Seu Carrinho</a>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/templates/index.html">Home</a></li>
+            <li><a href="/templates/masculino.html">Masculino</a></li>
+            <li><a href="/templates/feminino.html">Feminino</a></li>
+            <li><a href="/templates/infantil.html">Infantil</a></li>
+            <li><a href="/templates/acessorios.html">Acessórios</a></li>
+        </ul>
+    </nav>
+
+    <div class="carrinho-container">
+        <div class="carrinho-conteudo">
+            <h1 class="carrinho-titulo">Seu Carrinho</h1>
+            <div class="carrinho-itens" id="carrinhoItens">
+            </div>
+        </div>
+
+        <div class="resumo-pedido">
+            <h2 class="resumo-titulo">Resumo do Pedido</h2>
+
+            <div class="resumo-linha">
+                <span>Subtotal:</span>
+                <span id="subtotal">R$ 0,00</span>
+            </div>
+
+            <div class="resumo-linha">
+                <span>Frete:</span>
+                <span id="frete">...</span>
+            </div>
+
+            <div class="resumo-linha">
+                <span>Desconto:</span>
+                <span id="desconto">R$ 0,00</span>
+            </div>
+
+            <div class="resumo-linha">
+                <label for="cep">Calcular frete pelo CEP:</label>
+                <input type="text" id="cep" placeholder="Digite seu CEP" maxlength="8">
+                <button onclick="calcularFrete()">Calcular Frete</button>
+            </div>
+
+            <div class="resumo-total">
+                <span>Total:</span>
+                <span id="total">R$ 0,00</span>
+            </div>
+
+            <button id="btnFinalizar" class="btn-finalizar">Finalizar Compra</button>
+            <a href="/templates/index.html" class="continuar-comprando">Continuar comprando</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Mix-Modas - Todos os direitos reservados</p>
+    </footer>
+
+    <script>
+        function pesquisar() {
+            const termo = document.getElementById('searchInput').value;
+            if (termo.trim()) alert(`Pesquisando por: ${termo}`);
+        }
+
+        function carregarCarrinho() {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            const container = document.getElementById('carrinhoItens');
+
+            if (carrinho.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#666;">Seu carrinho está vazio. <a href="index.html">Continue comprando!</a></p>';
+                atualizarTotal(null);
+                return;
+            }
+
+            container.innerHTML = '';
+            carrinho.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'carrinho-item';
+                itemDiv.innerHTML = `
+                    <img src="${item.imagem}" alt="${item.nome}" class="carrinho-item-imagem">
+                    <div class="carrinho-item-info">
+                        <h3 class="carrinho-item-titulo">${item.nome}</h3>
+                        <p class="carrinho-item-preco">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>
+                        <div class="carrinho-quantidade">
+                            <button class="diminuir" data-index="${index}">-</button>
+                            <span>${item.quantidade}</span>
+                            <button class="aumentar" data-index="${index}">+</button>
+                        </div>
+                        <button class="remover-item" data-index="${index}">Remover</button>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+
+            adicionarEventListeners();
+            atualizarTotal(null);
+        }
+
+        function adicionarEventListeners() {
+            document.querySelectorAll('.aumentar').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    atualizarQuantidade(index, 1);
+                });
+            });
+            document.querySelectorAll('.diminuir').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    atualizarQuantidade(index, -1);
+                });
+            });
+            document.querySelectorAll('.remover-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    removerItem(index);
+                });
+            });
+        }
+
+        function atualizarQuantidade(index, delta) {
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            if (carrinho[index]) {
+                carrinho[index].quantidade += delta;
+                if (carrinho[index].quantidade < 1) carrinho[index].quantidade = 1;
+                localStorage.setItem('carrinho', JSON.stringify(carrinho));
+                carregarCarrinho();
+            }
+        }
+
+        function removerItem(index) {
+            let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            carrinho.splice(index, 1);
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            carregarCarrinho();
+        }
+
+        function atualizarTotal(frete) {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+            let subtotal = 0;
+            carrinho.forEach(item => subtotal += item.preco * item.quantidade);
+
+            const desconto = subtotal > 100 ? 20 : 0;
+
+            let freteFinal;
+            if (subtotal > 100) freteFinal = 0;
+            else if (frete != null) freteFinal = frete;
+            else freteFinal = '...';
+
+            let total = subtotal;
+            if (freteFinal !== '...') total += freteFinal;
+            total -= desconto;
+
+            document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('frete').textContent = freteFinal === 0 ? 'Grátis' : freteFinal === '...' ? '...' : `R$ ${freteFinal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('desconto').textContent = `R$ ${desconto.toFixed(2).replace('.', ',')}`;
+            document.getElementById('total').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        async function calcularFrete() {
+            let cep = document.getElementById('cep').value.trim();
+
+            // Remove caracteres não numéricos
+            cep = cep.replace(/\D/g, '');
+
+            // Validação do CEP
+            if (!cep || cep.length !== 8) {
+                alert('Digite um CEP válido (8 números).');
+                return;
+            }
+
+            const freteEl = document.getElementById('frete');
+            freteEl.textContent = 'Calculando...';
+
+            try {
+                // Simulação de cálculo de frete - substitua pela sua API real
+                const valorFrete = await simularCalculoFrete(cep);
+                
+                const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+                const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+
+                const freteFinal = subtotal > 100 ? 0 : valorFrete;
+
+                freteEl.textContent = freteFinal === 0 ? 'Grátis' : `R$ ${freteFinal.toFixed(2).replace('.', ',')}`;
+                atualizarTotal(freteFinal);
+
+                alert(`Frete calculado: ${freteFinal === 0 ? 'Grátis' : `R$ ${freteFinal.toFixed(2).replace('.', ',')}`}`);
+                
+            } catch (err) {
+                console.error('Erro ao calcular frete:', err);
+                freteEl.textContent = '...';
+                alert('Não foi possível calcular o frete. Verifique o CEP e tente novamente.');
+            }
+        }
+
+        // Função simulada para cálculo de frete - substitua pela sua API real
+        async function simularCalculoFrete(cep) {
+            // Simula uma requisição à API
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simula diferentes valores de frete baseados no CEP
+                    const primeiroDigito = parseInt(cep.charAt(0));
+                    
+                    if (primeiroDigito >= 0 && primeiroDigito <= 3) {
+                        resolve(15.90); // Região Sul/Sudeste
+                    } else if (primeiroDigito >= 4 && primeiroDigito <= 6) {
+                        resolve(22.50); // Região Nordeste
+                    } else if (primeiroDigito >= 7 && primeiroDigito <= 9) {
+                        resolve(28.90); // Região Norte/Centro-Oeste
+                    } else {
+                        reject('CEP inválido');
+                    }
+                }, 1000); // Simula delay de rede
+            });
+        }
+
+        // Alternativa: se você tiver uma API real, use esta função:
+        /*
+        async function calcularFreteReal(cep) {
+            try {
+                const response = await fetch(`/api/frete/${cep}`);
+                const data = await response.json();
+
+                if (!response.ok || !data || !data.success) {
+                    throw new Error(data?.message || 'Erro ao calcular frete.');
+                }
+
+                return parseFloat(data.frete) || 0;
+            } catch (error) {
+                console.error('Erro na API de frete:', error);
+                throw error;
+            }
+        }
+        */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarCarrinho();
+
+            // Adiciona evento de Enter no campo CEP
+            document.getElementById('cep').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    calcularFrete();
+                }
+            });
+
+            document.getElementById('btnFinalizar').addEventListener('click', async () => {
+                const usuario = (localStorage.getItem('usuarioLogado') || '').trim();
+                if (!usuario) {
+                    alert('Você precisa estar logado para finalizar a compra.');
+                    window.location.href = '/templates/tela_login.html';
+                    return;
+                }
+
+                try {
+                    const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+                    
+                    if (carrinho.length === 0) {
+                        alert('Seu carrinho está vazio!');
+                        return;
+                    }
+
+                    const subtotalText = document.getElementById('subtotal').textContent
+                        .replace('R$ ', '').replace('.', '').replace(',', '.');
+                    const subtotal = parseFloat(subtotalText) || 0;
+
+                    const freteEl = document.getElementById('frete').textContent;
+                    let frete = 0;
+                    if (freteEl && freteEl !== 'Grátis' && freteEl !== '...') {
+                        frete = parseFloat(freteEl.replace('R$ ', '').replace('.', '').replace(',', '.')) || 0;
+                    }
+
+                    const totalText = document.getElementById('total').textContent
+                        .replace('R$ ', '').replace('.', '').replace(',', '.');
+                    const total = parseFloat(totalText) || 0;
+
+                    // Aqui você faria a requisição para sua API de checkout
+                    console.log('Dados do checkout:', {
+                        email: usuario,
+                        carrinho,
+                        subtotal,
+                        frete,
+                        total
+                    });
+
+                    alert('Compra finalizada com sucesso!');
+                    localStorage.removeItem('carrinho');
+                    carregarCarrinho();
+                    window.location.href = '/templates/index.html';
+
+                } catch (err) {
+                    console.error('Erro no checkout:', err);
+                    alert('Erro ao finalizar compra. Tente novamente.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style_categorias.css">
+    <title>Moda Infantil - Mix-Modas</title>
+</head>
+<body>
+    <button class="categories-toggle" onclick="toggleSidebar()">☰ Todas as Categorias</button>
+
+    <!-- Barra lateral de categorias -->
+    <div class="categories-sidebar" id="categoriesSidebar">
+        <h3>🛍️ Categorias</h3>
+        <ul class="categories-list">
+            <li><a href="/templates/index.html">🏠 Página Inicial</a></li>
+            <li><a href="/templates/feminino.html">👚 Feminino</a></li>
+            <li><a href="/templates/masculino.html">👕 Masculino</a></li>
+            <li><a href="/templates/infantil.html" class="active">👶 Infantil</a></li>
+            <li><a href="/templates/acessorios.html">💎 Acessórios</a></li>
+        </ul>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <header>
+        <div class="logo">
+            <a href="/templates/index.html" style="color: white; text-decoration: none;">
+                <img src="/static/css/logo-mixmodas.png" alt="Mix-Modas" class="logo-img">
+            </a>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="O que você procura hoje?" id="searchInput">
+            <button onclick="pesquisar()">Pesquisar</button>
+        </div>
+        <div class="icons">
+            <a href="/templates/lista_desejos.html" id="listaDesejosLink">❤️ Lista de Desejos (0)</a>
+            <a href="/templates/tela_login.html" id="loginLink">👤 Entrar</a>
+            <a href="/templates/carrinho.html" id="carrinhoLink">🛒 Carrinho (0)</a>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/templates/masculino.html">Masculino</a></li>
+            <li><a href="/templates/feminino.html">Feminino</a></li>
+            <li><a href="/templates/infantil.html">Infantil</a></li>
+            <li><a href="/templates/acessorios.html">Acessórios</a></li>
+        </ul>
+    </nav>
+
+    <div class="promo-bar">
+        🚀 Frete grátis para compras acima de <span>R$99,99</span> 
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/templates/index.html">Home</a> > <span>Moda Infantil</span>
+    </div>
+
+    <section class="page-title">
+        <h1>👶 Moda Infantil</h1>
+        <p>Conforto e diversão para os pequenos</p>
+    </section>
+
+    <section class="filters">
+        <div class="filter-group">
+            <label>Ordenar por:</label>
+            <select id="ordenarSelect">
+                <option>Mais vendidos</option>
+                <option>Menor preço</option>
+                <option>Maior preço</option>
+                <option>Lançamentos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Idade:</label>
+            <select id="idadeSelect">
+                <option>Todas</option>
+                <option>0-2 anos</option>
+                <option>3-6 anos</option>
+                <option>7-12 anos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Gênero:</label>
+            <select id="generoSelect">
+                <option>Todos</option>
+                <option>Menino</option>
+                <option>Menina</option>
+                <option>Unissex</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="produtos-container">
+        <div id="produtos-grid" class="produtos-grid" data-categoria="infantil"></div>
+        <div id="paginacao" class="paginacao" style="display:none"></div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>👗 Mix-Modas</h3>
+                <p>Sua loja de moda preferida com os melhores preços e tendências.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Institucional</h4>
+                <a href="#">Sobre nós</a>
+                <a href="#">Trocas e Devoluções</a>
+                <a href="#">Política de Privacidade</a>
+            </div>
+            <div class="footer-section">
+                <h4>Atendimento</h4>
+                <a href="#">Central de Ajuda</a>
+                <a href="#">Fale Conosco</a>
+                <a href="#">WhatsApp</a>
+            </div>
+            <div class="footer-section">
+                <h4>Redes Sociais</h4>
+                <div class="social-links">
+                    <a href="#">📷 Instagram</a>
+                    <a href="#">📘 Facebook</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Mix-Modas - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/categorias_produtos.js"></script>
+    <script src="/static/js/global.js"></script>
+    <script>
+        function pesquisar() {
+            const termo = document.getElementById('searchInput').value;
+            if (termo.trim()) {
+                alert(`Pesquisando por: ${termo}`);
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                pesquisar();
+            }
+        });
+
+        // Funções para controlar a barra lateral
+        function toggleSidebar() {
+            const sidebar = document.getElementById('categoriesSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('categoriesSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        // Fechar sidebar ao pressionar ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        // Fechar sidebar ao clicar em um link
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.categories-list a').forEach(link => {
+                link.addEventListener('click', closeSidebar);
+            });
+        });
+    </script>
+</body>
+</html>

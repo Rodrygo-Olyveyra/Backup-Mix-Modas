@@ -1,0 +1,158 @@
+/* ================== RESET ================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* ================== FORMULÁRIO DE CADASTRO ================== */
+form {
+    background: white;
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    border-top: 4px solid #d6005d;
+}
+
+/* Logo da loja */
+.logo-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+
+.logo-subtitle {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    color: #000;
+    font-weight: 700;
+}
+
+div {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    outline: none;
+}
+
+input:focus {
+    border-color: #d6005d;
+}
+
+button {
+    width: 100%;
+    padding: 1rem;
+    background: #000;
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+button:hover {
+    background: #333;
+}
+
+/* Botão secundário */
+.btn-secondary {
+    background: transparent;
+    border: 2px solid #ddd;
+    color: #333;
+    margin-top: 1rem;
+}
+
+.btn-secondary:hover {
+    background: #f8f8f8;
+    border-color: #d6005d;
+    color: #d6005d;
+}
+
+#mensagem {
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.links-container {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.voltar-link {
+    color: #d6005d;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+.voltar-link:hover {
+    text-decoration: underline;
+}
+
+/* ================== RESPONSIVO ================== */
+@media (max-width: 480px) {
+    body {
+        padding: 1rem;
+    }
+    
+    form {
+        padding: 2rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .logo {
+        font-size: 1.8rem;
+    }
+}

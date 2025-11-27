@@ -1,0 +1,37 @@
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --text:#263238;
+  --muted:#6b7280;
+  --primary:#0b5ea6; /* azul escuro */
+  --accent:#ff8a4b;  /* laranja suave */
+  --success:#22c55e;
+}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.topbar .title{font-size:1.5rem;font-weight:700;color:var(--primary)}
+.topbar .actions{display:flex;gap:10px;align-items:center}
+input#busca{padding:10px 14px;border-radius:12px;border:1px solid #d1d5db;width:320px}
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;border:none;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.secondary{background:#fff;border:1px solid #e6eef8;color:var(--primary)}
+.btn.small{padding:6px 10px;font-size:0.9rem;border-radius:8px}
+.btn.danger{background:#ef4444;color:#fff}
+.produtos-area{background:transparent}
+.produtos-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,0.06)}
+.produtos-table th,.produtos-table td{padding:14px 16px;text-align:left;vertical-align:middle}
+.produtos-table thead th{background:linear-gradient(90deg,var(--primary),#0a4a86);color:#fff;font-size:0.85rem;text-transform:uppercase}
+.produtos-table tbody tr{border-bottom:1px solid #f1f5f9}
+.produtos-table tbody tr:hover{background:#fbfdff}
+.imgcell img{width:72px;height:72px;object-fit:cover;border-radius:10px}
+.namecell .cat{font-size:0.8rem;color:var(--muted);margin-top:6px}
+.desccell{max-width:36ch;color:var(--muted)}
+.pricecell{font-weight:700;color:var(--primary)}
+.actions{display:flex;gap:8px;justify-content:flex-end}
+.cat-badge{background:rgba(11,94,166,0.08);color:var(--primary);padding:6px 8px;border-radius:8px;font-size:0.8rem}
+
+@media (max-width:800px){
+  .topbar{flex-direction:column;align-items:flex-start;gap:10px}
+  input#busca{width:100%}
+}

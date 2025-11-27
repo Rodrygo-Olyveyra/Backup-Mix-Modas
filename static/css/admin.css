@@ -1,0 +1,30 @@
+/* Estilos para o menu lateral do admin */
+#menuLateralAdmin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 230px;
+  background-color: #111;
+  color: white;
+  padding-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 9999;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+}
+#menuLateralAdmin a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px;
+  width: 100%;
+  display: block;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+#menuLateralAdmin a:hover { background-color: #222; }
+#menuLateralAdmin h3 { margin-left: 20px; margin-bottom: 10px; font-size: 1.2rem; }
+#logoutAdmin { background: crimson; border: none; color: white; width: 90%; margin: 15px auto; padding: 10px; font-weight: bold; border-radius: 5px; cursor: pointer; display: block; }
+body.menu-ativo { margin-left: 230px; transition: margin-left 0.3s; }

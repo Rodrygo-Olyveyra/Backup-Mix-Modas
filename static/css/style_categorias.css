@@ -1,0 +1,574 @@
+/* ================== RESET ================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #fff;
+    color: #333;
+}
+
+/* ================== BARRA LATERAL DE CATEGORIAS ================== */
+.categories-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 250px;
+    background: #111;
+    color: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    padding: 80px 20px 20px 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+}
+
+.categories-sidebar.active {
+    transform: translateX(0);
+}
+
+.categories-sidebar h3 {
+    color: #ff2e8a;
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #ff2e8a;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.categories-list {
+    list-style: none;
+}
+
+.categories-list li {
+    margin-bottom: 8px;
+}
+
+.categories-list a {
+    color: white;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    font-size: 0.95rem;
+}
+
+.categories-list a:hover {
+    background: #222;
+    border-left-color: #ff2e8a;
+    padding-left: 20px;
+}
+
+.categories-list a.active {
+    background: #333;
+    border-left-color: #ff2e8a;
+    font-weight: 600;
+}
+
+/* Botão para abrir a barra lateral */
+.categories-toggle {
+    background: #111;
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 999;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+}
+
+.categories-toggle:hover {
+    background: #ff2e8a;
+    padding-left: 20px;
+}
+
+/* Overlay para fechar a barra lateral */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    display: none;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ================== HEADER ================== */
+header {
+    background-color: #000;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    position: relative;
+    z-index: 1001;
+    gap: 2rem;
+}
+
+.logo {
+    flex-shrink: 0;
+}
+
+.logo-img {
+    height: 35px;
+    width: auto;
+}
+
+/* ================== BARRA DE PESQUISA ================== */
+.search-bar {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.8rem;
+    border-radius: 30px;
+    border: 1.5px solid #ddd;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #d6005d;
+}
+
+.search-bar::before {
+    content: "🔍";
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 1rem;
+}
+
+.search-bar button {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #d6005d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ================== ÍCONES ================== */
+.icons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.icons a {
+    color: white;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.icons a:hover {
+    background: #333;
+}
+
+/* ================== NAV ================== */
+nav {
+    background-color: #111;
+    padding: 0.7rem 2rem;
+    position: relative;
+    z-index: 1001;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+nav ul li a:hover {
+    color: #ff2e8a;
+    background: #222;
+}
+
+/* ================== PROMO BAR ================== */
+.promo-bar {
+    background: linear-gradient(90deg, #000, #2c2c2c);
+    color: #fff;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 0.6rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 1001;
+}
+
+.promo-bar span {
+    font-weight: 700;
+    color: #ff2e8a;
+}
+
+/* ================== BREADCRUMB ================== */
+.breadcrumb {
+    padding: 1rem 2rem;
+    background: #f8f8f8;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.breadcrumb a {
+    color: #666;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: #d6005d;
+}
+
+.breadcrumb span {
+    color: #333;
+    font-weight: 500;
+}
+
+/* ================== TÍTULO DA PÁGINA ================== */
+.page-title {
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f8f8, #fff);
+}
+
+.page-title h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #000;
+}
+
+.page-title p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* ================== FILTROS ================== */
+.filters {
+    padding: 1rem 2rem;
+    background: #f8f8f8;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #333;
+}
+
+.filter-group select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: white;
+}
+
+/* ================== PRODUTOS ================== */
+.produtos-container {
+    padding: 2rem;
+}
+
+.produtos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.produto-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.produto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.produto-imagem {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.produto-info {
+    padding: 1.2rem;
+}
+
+.produto-titulo {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.produto-preco {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #d6005d;
+    margin-bottom: 0.5rem;
+}
+
+.produto-parcelamento {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.produto-acoes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-carrinho {
+    flex: 1;
+    background: #000;
+    color: white;
+    border: none;
+    padding: 0.7rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.btn-carrinho:hover {
+    background: #333;
+}
+
+.btn-favorito {
+    background: transparent;
+    border: 2px solid #ddd;
+    color: #333;
+    padding: 0.7rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-favorito:hover {
+    border-color: #d6005d;
+    color: #d6005d;
+}
+
+.produto-tag {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: #d6005d;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* ================== PAGINAÇÃO ================== */
+.paginacao {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+}
+
+.paginacao a {
+    padding: 0.7rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.paginacao a:hover,
+.paginacao a.ativa {
+    background: #000;
+    color: white;
+    border-color: #000;
+}
+
+/* ================== FOOTER ================== */
+footer {
+    background-color: #111;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.footer-section h3,
+.footer-section h4 {
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.footer-section a {
+    display: block;
+    color: #ccc;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+    color: #ff6b6b;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #333;
+    color: #666;
+}
+
+/* ================== RESPONSIVO ================== */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .search-bar {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .icons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .produtos-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .categories-sidebar {
+        width: 220px;
+    }
+
+    .categories-toggle {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .promo-bar {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+
+    .icons {
+        gap: 0.5rem;
+    }
+
+    .icons a {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+
+    nav ul {
+        gap: 0.5rem;
+    }
+
+    nav ul li a {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .categories-sidebar {
+        width: 200px;
+        padding: 70px 15px 15px 15px;
+    }
+}
+
+/* Scrollbar personalizada */
+.categories-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.categories-sidebar::-webkit-scrollbar-track {
+    background: #222;
+}
+
+.categories-sidebar::-webkit-scrollbar-thumb {
+    background: #ff2e8a;
+    border-radius: 3px;
+}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro Produto</title>
+  <link rel="stylesheet" href="/static/css/style_cadastro_produtos.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <style>
+    .campos-dinamicos {
+      margin: 15px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+    }
+    
+    .campos-dinamicos.hidden {
+      display: none;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .required::after {
+      content: " *";
+      color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h1>Cadastrar / Editar Produto</h1>
+  <form id="produtoForm" enctype="multipart/form-data" class="produto-form">
+    <input type="hidden" id="editingId">
+
+    <div class="form-row">
+      <label for="nome" class="required">Nome</label>
+      <input type="text" id="nome" required placeholder="Nome do produto">
+    </div>
+
+    <div class="form-row">
+      <label for="categoria" class="required">Categoria</label>
+      <select id="categoria" required>
+        <option value="">-- Selecione categoria --</option>
+        <option value="masculino">Masculino</option>
+        <option value="feminino">Feminino</option>
+        <option value="infantil">Infantil</option>
+        <option value="acessorios">Acessórios</option>
+      </select>
+    </div>
+
+    <!-- Campos dinâmicos para Acessórios -->
+    <div id="camposAcessorios" class="campos-dinamicos hidden">
+      <h3>Informações do Acessório</h3>
+      
+      <div class="form-group">
+        <label for="tipoAcessorio" class="required">Tipo do Acessório</label>
+        <select id="tipoAcessorio">
+          <option value="">-- Selecione o tipo --</option>
+          <option value="Bolsa">Bolsa</option>
+          <option value="Carteira">Carteira</option>
+          <option value="Cinto">Cinto</option>
+          <option value="Óculos">Óculos</option>
+          <option value="Relógio">Relógio</option>
+          <option value="Joia">Joia</option>
+          <option value="Chapéu">Chapéu/Boné</option>
+          <option value="Lenço">Lenço/Cachecol</option>
+          <option value="Meia">Meia</option>
+          <option value="Gravata">Gravata</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="materialAcessorio">Material</label>
+        <input type="text" id="materialAcessorio" placeholder="Ex: Couro, Prata, Ouro, Tecido...">
+      </div>
+
+      <div class="form-group">
+        <label for="corAcessorio" class="required">Cor Principal</label>
+        <input type="text" id="corAcessorio" placeholder="Ex: Preto, Prata, Marrom...">
+      </div>
+    </div>
+
+    <!-- Campos dinâmicos para Infantil -->
+    <div id="camposInfantil" class="campos-dinamicos hidden">
+      <h3>Informações Infantil</h3>
+      
+      <div class="form-group">
+        <label for="idadeRecomendada" class="required">Idade Recomendada</label>
+        <select id="idadeRecomendada">
+          <option value="">-- Selecione a idade --</option>
+          <option value="0-2 anos">0-2 anos</option>
+          <option value="3-6 anos">3-6 anos</option>
+          <option value="7-10 anos">7-10 anos</option>
+          <option value="11-14 anos">11-14 anos</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="generoInfantil" class="required">Gênero</label>
+        <select id="generoInfantil">
+          <option value="">-- Selecione o gênero --</option>
+          <option value="Menino">Menino</option>
+          <option value="Menina">Menina</option>
+          <option value="Unissex">Unissex</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Campos para Roupas (Masculino/Feminino) -->
+    <div id="camposRoupas" class="campos-dinamicos hidden">
+      <h3>Informações da Roupa</h3>
+      
+      <div class="form-group">
+        <label for="tamanhoRoupa" class="required">Tamanho</label>
+        <select id="tamanhoRoupa">
+          <option value="">-- Selecione o tamanho --</option>
+          <option value="PP">PP</option>
+          <option value="P">P</option>
+          <option value="M">M</option>
+          <option value="G">G</option>
+          <option value="GG">GG</option>
+          <option value="XG">XG</option>
+          <option value="EG">EG</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="corRoupa" class="required">Cor</label>
+        <input type="text" id="corRoupa" placeholder="Ex: Azul, Preto, Branco...">
+      </div>
+
+      <div class="form-group">
+        <label for="composicao">Composição</label>
+        <input type="text" id="composicao" placeholder="Ex: 100% Algodão, 80% Poliéster...">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label for="descricao" class="required">Descrição</label>
+      <textarea id="descricao" required placeholder="Descrição breve do produto"></textarea>
+    </div>
+
+    <div class="form-row group">
+      <div>
+        <label for="preco" class="required">Preço (R$)</label>
+        <input type="number" id="preco" step="0.01" required>
+      </div>
+      <div>
+        <label for="quantidade" class="required">Quantidade</label>
+        <input type="number" id="quantidade" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label for="imagem">Imagem do Produto</label>
+      <input type="file" id="imagem" name="imagem" accept="image/*">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Salvar Produto</button>
+      <a href="/templates/lista_produtos.html" class="btn secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<aside id="menuLateralAdmin">
+  <h3>⚙️ Modo Admin</h3>
+  <a href="/templates/lista_produtos.html">🧾 Lista de Produtos</a>
+  <a href="/templates/cadastro_produtos.html">➕ Cadastrar Produto</a>
+  <button id="logoutAdmin">🚪 Sair</button>
+</aside>
+
+<script>
+    const usuarioLogado = localStorage.getItem('usuarioLogado');
+    const role = localStorage.getItem('userRole');
+    if (!usuarioLogado || role !== 'admin') {
+      alert('Acesso negado! Você precisa estar logado como admin.');
+      window.location.href = '/templates/index.html';
+    } else {
+      document.getElementById('menuLateralAdmin').style.display = 'flex';
+      document.body.classList.add('menu-ativo');
+  }
+
+  document.getElementById('logoutAdmin').addEventListener('click', () => {
+    localStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('nomeUsuario');
+    window.location.href = '/templates/tela_login.html';
+  });
+</script>
+
+<script src="/static/js/cadastro_produtos.js"></script>

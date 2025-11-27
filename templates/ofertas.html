@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style_categorias.css">
+    <title>Ofertas - Mix-Modas</title>
+    <style>
+        .contador-oferta {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .produto-preco-antigo {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .banner-promocional {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 40px 0;
+        }
+        
+        .banner-promocional h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+        
+        .banner-promocional p {
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+        
+        .banner-promocional strong {
+            background: white;
+            color: #667eea;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">
+            <a href="index.html" style="color: white; text-decoration: none; font-size: 1.5rem; font-weight: 700;">
+                <img src="/static/css/logo-mixmodas.png" alt="Mix-Modas" class="logo-img">
+            </a>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="O que você procura hoje?" id="searchInput">
+            <button onclick="pesquisar()">Pesquisar</button>
+        </div>
+        <div class="icons">
+            <a href="lista_desejos.html">❤️ Lista de Desejos</a>
+            <a href="/templates/tela_login.html">👤 Entrar</a>
+            <a href="carrinho.html">🛒 Seu Carrinho (0)</a>
+        </div>
+    </header>
+
+    <!-- NAV CATEGORIAS -->
+    <nav>
+        <ul>
+            <li>
+                <a href="javascript:void(0)" style="cursor: default;">☰ Todas as categoria</a>
+                <div class="dropdown dropdown-todas">
+                    <ul>
+                        <li><a href="masculino.html">👕 Masculino</a></li>
+                        <li><a href="feminino.html">👚 Feminino</a></li>
+                        <li><a href="infantil.html">👶 Infantil</a></li>
+                        <li><a href="acessorios.html">🕶️ Acessórios</a></li>
+                        <li><a href="calcados.html">👟 Calçados</a></li>
+                        <li><a href="esportivo.html">🏃 Esportivo</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li><a href="masculino.html">Masculino</a></li>
+            <li><a href="feminino.html">Feminino</a></li>
+            <li><a href="infantil.html">Infantil</a></li>
+            <li><a href="acessorios.html">Acessórios</a></li>
+            <li><a href="ofertas.html">🔥 Ofertas</a></li>
+        </ul>
+    </nav>
+
+    <!-- PROMO BAR ESPECIAL -->
+    <div class="promo-bar" style="background: linear-gradient(45deg, #ff6b6b, #ff8e8e);">
+        🔥 OFERTAS ESPECIAIS - Descontos de até 70%! 
+    </div>
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+        <a href="index.html">Home</a> > <span>Ofertas</span>
+    </div>
+
+    <!-- TÍTULO -->
+    <section class="page-title">
+        <h1>🔥 Ofertas Imperdíveis</h1>
+        <p>Produtos selecionados com os melhores descontos!</p>
+    </section>
+
+    <!-- CONTADOR DE OFERTA -->
+    <div class="contador-oferta">
+        ⏰ Oferta termina em: <span id="contador">23:59:59</span>
+    </div>
+
+    <!-- FILTROS -->
+    <section class="filters">
+        <div class="filter-group">
+            <label>Ordenar por:</label>
+            <select>
+                <option>Maior desconto</option>
+                <option>Menor preço</option>
+                <option>Mais vendidos</option>
+                <option>Lançamentos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Desconto mínimo:</label>
+            <select>
+                <option>Todos</option>
+                <option>30% ou mais</option>
+                <option>50% ou mais</option>
+                <option>70% ou mais</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Categoria:</label>
+            <select>
+                <option>Todas</option>
+                <option>Masculino</option>
+                <option>Feminino</option>
+                <option>Acessórios</option>
+                <option>Calçados</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- PRODUTOS EM OFERTA -->
+    <section class="produtos-container">
+        <div class="produtos-grid">
+            <!-- Oferta 1 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #ff4444;">-70%</div>
+                <img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=300&h=300&fit=crop" alt="Tênis Esportivo" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Tênis Esportivo Premium</h3>
+                    <p class="produto-preco-antigo">De: R$ 299,90</p>
+                    <p class="produto-preco">Por: R$ 89,90</p>
+                    <p class="produto-parcelamento">ou 3x de R$ 29,97</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oferta 2 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #ff6b35;">-60%</div>
+                <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=300&h=300&fit=crop" alt="Blazer Social" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Blazer Social Premium</h3>
+                    <p class="produto-preco-antigo">De: R$ 399,90</p>
+                    <p class="produto-preco">Por: R$ 159,90</p>
+                    <p class="produto-parcelamento">ou 5x de R$ 31,98</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oferta 3 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #4CAF50;">-55%</div>
+                <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=300&h=300&fit=crop" alt="Vestido Longo" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Vestido Longo Elegante</h3>
+                    <p class="produto-preco-antigo">De: R$ 199,90</p>
+                    <p class="produto-preco">Por: R$ 89,90</p>
+                    <p class="produto-parcelamento">ou 3x de R$ 29,97</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oferta 4 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #2196F3;">-45%</div>
+                <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=300&h=300&fit=crop" alt="Relógio Smart" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Relógio Smartwatch</h3>
+                    <p class="produto-preco-antigo">De: R$ 249,90</p>
+                    <p class="produto-preco">Por: R$ 137,90</p>
+                    <p class="produto-parcelamento">ou 4x de R$ 34,48</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oferta 5 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #FF9800;">-65%</div>
+                <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop" alt="Mochila Executiva" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Mochila Executiva Couro</h3>
+                    <p class="produto-preco-antigo">De: R$ 179,90</p>
+                    <p class="produto-preco">Por: R$ 62,90</p>
+                    <p class="produto-parcelamento">ou 2x de R$ 31,45</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oferta 6 -->
+            <div class="produto-card">
+                <div class="produto-tag" style="background: #9C27B0;">-50%</div>
+                <img src="https://images.unsplash.com/photo-1544441893-675973e31985?w=300&h=300&fit=crop" alt="Conjunto Esportivo" class="produto-imagem">
+                <div class="produto-info">
+                    <h3 class="produto-titulo">Conjunto Esportivo Completo</h3>
+                    <p class="produto-preco-antigo">De: R$ 159,90</p>
+                    <p class="produto-preco">Por: R$ 79,90</p>
+                    <p class="produto-parcelamento">ou 3x de R$ 26,63</p>
+                    <div class="produto-acoes">
+                        <button class="btn-carrinho">Adicionar</button>
+                        <button class="btn-favorito">❤️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="paginacao">
+            <a href="#">‹</a>
+            <a href="#" class="ativa">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">›</a>
+        </div>
+    </section>
+
+    <!-- BANNER PROMOCIONAL -->
+    <section class="banner-promocional">
+        <div class="banner-content">
+            <h2>🎁 Cupom de Desconto Extra</h2>
+            <p>Use o código: <strong>OFERTA10</strong> para ganhar mais 10% OFF</p>
+            <small>Válido apenas para produtos em oferta</small>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>👗 Mix-Modas</h3>
+                <p>Sua loja de moda preferida com os melhores preços e tendências.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Institucional</h4>
+                <a href="#">Sobre nós</a>
+                <a href="#">Trocas e Devoluções</a>
+                <a href="#">Política de Privacidade</a>
+            </div>
+            <div class="footer-section">
+                <h4>Atendimento</h4>
+                <a href="#">Central de Ajuda</a>
+                <a href="#">Fale Conosco</a>
+                <a href="#">WhatsApp</a>
+            </div>
+            <div class="footer-section">
+                <h4>Redes Sociais</h4>
+                <div class="social-links">
+                    <a href="#">📷 Instagram</a>
+                    <a href="#">📘 Facebook</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Mix-Modas - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <script>
+        function pesquisar() {
+            const termo = document.getElementById('searchInput').value;
+            if (termo.trim()) {
+                alert(`Pesquisando por: ${termo}`);
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                pesquisar();
+            }
+        });
+
+        document.querySelectorAll('.btn-carrinho').forEach(button => {
+            button.addEventListener('click', function() {
+                const produto = this.closest('.produto-card');
+                const nome = produto.querySelector('.produto-titulo').textContent;
+                alert(`${nome} adicionado ao carrinho!`);
+            });
+        });
+
+        document.querySelectorAll('.btn-favorito').forEach(button => {
+            button.addEventListener('click', function() {
+                const produto = this.closest('.produto-card');
+                const nome = produto.querySelector('.produto-titulo').textContent;
+                alert(`${nome} adicionado aos favoritos!`);
+            });
+        });
+
+        // Contador regressivo para ofertas
+        function atualizarContador() {
+            const agora = new Date();
+            const fimDoDia = new Date();
+            fimDoDia.setHours(23, 59, 59, 999);
+            
+            const diferenca = fimDoDia - agora;
+            
+            const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diferenca % (1000 * 60)) / 1000);
+            
+            document.getElementById('contador').textContent = 
+                `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        }
+
+        setInterval(atualizarContador, 1000);
+        atualizarContador();
+    </script>
+
+</body>
+</html>
