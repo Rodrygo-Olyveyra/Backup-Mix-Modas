@@ -1,5 +1,4 @@
 const express = require("express");
-const admin = require("firebase-admin");
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
@@ -8,30 +7,21 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-try {
-  const serviceAccountPath = "./config/firebase-key.json";
-  if (fs.existsSync(serviceAccountPath)) {
-    const serviceAccount = require(serviceAccountPath);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: "https://sistema-de-loja-85c8a-default-rtdb.firebaseio.com/",
-    });
-    console.log("✅ Firebase conectado!");
-  } else {
-    console.warn("⚠️ Arquivo Firebase não encontrado - funcionalidades limitadas");
-  }
-} catch (error) {
-  console.warn("⚠️ Firebase não inicializado:", error.message);
-}
+// ⚠️ Firebase desativado temporariamente para testes
+console.log("⚠️ Firebase desativado para testes iniciais");
+const realtimeDB = null;
 
-const realtimeDB = admin.database ? admin.database() : null;
-
+// ✅ CORREÇÃO CRÍTICA: Inicializar o banco de dados
 let db;
 try {
-  const dbPath = path.join('/tmp', 'loja.db'); 
+  const dbPath = path.join('/tmp', 'loja.db');
+  db = new sqlite3.Database(dbPath); // ← ESTA LINHA ESTAVA FALTANDO!
+  
+  console.log("✅ SQLite conectado em:", dbPath);
   
   db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
@@ -58,12 +48,18 @@ try {
       FOREIGN KEY(usuario_email) REFERENCES usuarios(email),
       FOREIGN KEY(produto_id) REFERENCES produtos(id)
     )`);
+    
+    // Inserir alguns dados de teste
+    db.run(`INSERT OR IGNORE INTO produtos (nome, descricao, preco, quantidade, categoria) 
+            VALUES ('Produto Teste', 'Descrição teste', 29.99, 10, 'Roupas')`);
+    
+    console.log("✅ Tabelas criadas/verificadas com sucesso!");
   });
-  console.log("✅ SQLite conectado em /tmp/loja.db");
 } catch (dbError) {
   console.error("❌ Erro ao conectar SQLite:", dbError.message);
 }
 
+// Configuração do Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = '/tmp/uploads';
@@ -78,14 +74,30 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+// --------------------- ROTAS ---------------------
+
+// 🏠 Rota raiz
 app.get("/", (req, res) => {
   res.json({ 
-    message: "API Mix Modas funcionando!",
-    status: "online",
+    message: "🚀 API Mix Modas Online!",
+    status: "success",
+    database: db ? "connected" : "disconnected",
     timestamp: new Date().toISOString()
   });
 });
 
+// 🩺 Health check
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "healthy",
+    database: db ? "connected" : "disconnected",
+    firebase: "disabled",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 📦 GET - listar produtos
 app.get("/api/produtos", (req, res) => {
   if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
   
@@ -104,6 +116,7 @@ app.get("/api/produtos", (req, res) => {
   });
 });
 
+// ➕ POST - criar produto
 app.post("/api/produtos", (req, res) => {
   if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
 
@@ -141,11 +154,6 @@ app.post("/api/produtos", (req, res) => {
           imagem,
         };
 
-        if (realtimeDB) {
-          realtimeDB.ref("produtos/" + produto.id).set(produto)
-            .catch((firebaseError) => console.warn("⚠️ Firebase:", firebaseError.message));
-        }
-
         res.json({ success: true, produto });
       }
     );
@@ -161,86 +169,8 @@ app.post("/api/produtos", (req, res) => {
   }
 });
 
-app.put("/api/produtos/:id", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
-
-  const { id } = req.params;
-  const contentType = req.headers["content-type"] || "";
-  const isMultipart = contentType.includes("multipart/form-data");
-
-  const proceed = () => {
-    let { nome, descricao, preco, quantidade, categoria } = req.body;
-    const imagem = req.file ? `/tmp/uploads/${req.file.filename}` : req.body.imagem;
-
-    preco = typeof preco === "string" ? preco.trim() : preco;
-    const precoNumerico = parseFloat(preco);
-    const quantidadeNumerica = parseInt(quantidade) || 0;
-
-    if (!nome || isNaN(precoNumerico)) {
-      return res.status(400).json({ error: "Nome e preço são obrigatórios" });
-    }
-
-    const sql = `
-      UPDATE produtos 
-      SET nome = ?, descricao = ?, preco = ?, quantidade = ?, categoria = ?, imagem = COALESCE(?, imagem)
-      WHERE id = ?
-    `;
-
-    db.run(sql, [nome, descricao || "", precoNumerico, quantidadeNumerica, categoria || "Outros", imagem, id], function (err) {
-      if (err) {
-        console.error("❌ Erro ao atualizar:", err.message);
-        return res.status(500).json({ error: "Erro ao atualizar produto" });
-      }
-
-      const produtoAtualizado = {
-        id,
-        nome,
-        descricao: descricao || "",
-        preco: precoNumerico,
-        quantidade: quantidadeNumerica,
-        categoria: categoria || "Outros",
-        imagem: imagem || null,
-      };
-
-      if (realtimeDB) {
-        realtimeDB.ref("produtos/" + id).update(produtoAtualizado)
-          .catch((e) => console.warn("⚠️ Firebase:", e.message));
-      }
-
-      res.json({ success: true, produto: produtoAtualizado });
-    });
-  };
-
-  if (isMultipart) {
-    upload.single("imagem")(req, res, (err) => {
-      if (err) return res.status(500).json({ error: "Erro no upload" });
-      proceed();
-    });
-  } else {
-    proceed();
-  }
-});
-
-app.delete("/api/produtos/:id", (req, res) => {
-  if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
-
-  const { id } = req.params;
-  db.run("DELETE FROM produtos WHERE id = ?", [id], function (err) {
-    if (err) {
-      console.error("❌ Erro ao excluir:", err.message);
-      return res.status(500).json({ error: "Erro ao excluir produto" });
-    }
-
-    if (realtimeDB) {
-      realtimeDB.ref("produtos/" + id).remove()
-        .catch((e) => console.warn("⚠️ Firebase:", e.message));
-    }
-
-    res.json({ success: true });
-  });
-});
-
-app.post("/api/cadastro", async (req, res) => {
+// 👤 Cadastro de usuários (simplificado)
+app.post("/api/cadastro", (req, res) => {
   if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
 
   const { nome, email, senha } = req.body;
@@ -253,41 +183,16 @@ app.post("/api/cadastro", async (req, res) => {
   db.run(
     "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
     [nome, email, hash],
-    async function (err) {
+    function (err) {
       if (err) {
         return res.status(500).json({ error: "Email já cadastrado" });
       }
-
-      if (admin.auth) {
-        try {
-          const userRecord = await admin.auth().createUser({
-            email,
-            password: senha,
-            displayName: nome,
-          });
-
-          if (realtimeDB) {
-            await realtimeDB.ref("usuarios/" + userRecord.uid).set({
-              nome,
-              email,
-              criadoEm: new Date().toISOString(),
-            });
-          }
-
-          res.json({ success: true, firebaseUID: userRecord.uid });
-        } catch (firebaseError) {
-          res.json({
-            success: true,
-            aviso: "Usuário salvo localmente, mas falhou no Firebase",
-          });
-        }
-      } else {
-        res.json({ success: true, aviso: "Usuário salvo apenas localmente" });
-      }
+      res.json({ success: true, message: "Usuário cadastrado com sucesso" });
     }
   );
 });
 
+// 🔐 Login
 app.post("/api/login", (req, res) => {
   if (!db) return res.status(500).json({ error: "Banco de dados não disponível" });
 
@@ -310,24 +215,9 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-app.get("/api/health", (req, res) => {
-  res.json({ 
-    status: "healthy",
-    database: db ? "connected" : "disconnected",
-    firebase: realtimeDB ? "connected" : "disconnected",
-    timestamp: new Date().toISOString()
-  });
-});
-
+// ❌ Handler para rotas não encontradas
 app.use((req, res) => {
   res.status(404).json({ error: "Rota não encontrada" });
 });
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  });
-}
 
 module.exports = app;
