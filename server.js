@@ -1,9 +1,33 @@
 const express = require("express");
+const admin = require("firebase-admin");
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcryptjs");
-const multer = require("multer");
+const axios = require("axios"); 
 const path = require("path");
-const fs = require("fs");
+require('dotenv').config(); 
+
+let firestore;
+try {
+  if (process.env.NODE_ENV === 'production' && process.env.FIREBASE_PRIVATE_KEY) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      })
+    });
+  } else {
+    const serviceAccount = require("./config/firebase-key.json");
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+  firestore = admin.firestore();
+  console.log("✅ Firebase conectado com sucesso!");
+} catch (error) {
+  console.warn("⚠️ Firebase não inicializado:", error.message);
+  firestore = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,18 +35,38 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ⚠️ Firebase desativado temporariamente
-console.log("⚠️ Firebase desativado para testes iniciais");
-const realtimeDB = null;
+const cors = require('cors'); 
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://seu-dominio.com', 'https://www.seu-dominio.com'] 
+    : 'http://localhost:3000',
+  credentials: true
+}));
 
-// ✅ SOLUÇÃO: SQLite EM MEMÓRIA (compatível com Vercel)
-let db;
-try {
-  // ⚡ MUDANÇA CRÍTICA: Usar memória instead de arquivo
-  db = new sqlite3.Database(':memory:'); 
-  
-  console.log("✅ SQLite em MEMÓRIA conectado! (compatível com Vercel)");
-  
+const __dirname = path.resolve(); 
+app.use("/static", express.static(path.join(__dirname, "static")));
+app.use("/templates", express.static(path.join(__dirname, "templates")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "public"))); 
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "templates", "index.html"));
+});
+
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/tmp/loja.db' 
+  : path.join(__dirname, "loja.db");
+
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error("Erro ao conectar ao banco:", err.message);
+  } else {
+    console.log("✅ Conectado ao SQLite Database");
+    initializeDatabase();
+  }
+});
+
+function initializeDatabase() {
   db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
       email TEXT PRIMARY KEY,
@@ -48,215 +92,150 @@ try {
       FOREIGN KEY(usuario_email) REFERENCES usuarios(email),
       FOREIGN KEY(produto_id) REFERENCES produtos(id)
     )`);
-    
-    // Inserir alguns dados de teste
-    db.run(`INSERT INTO produtos (nome, descricao, preco, quantidade, categoria) 
-            VALUES ('Camiseta Básica', 'Camiseta 100% algodão', 29.99, 50, 'Roupas'),
-                   ('Calça Jeans', 'Calça jeans masculina', 89.90, 30, 'Roupas'),
-                   ('Tênis Esportivo', 'Tênis para corrida', 129.90, 20, 'Calçados')`);
-    
-    // Usuário de teste
-    const hash = bcrypt.hashSync("123456", 10);
-    db.run(`INSERT OR IGNORE INTO usuarios (nome, email, senha, role) 
-            VALUES ('Admin', 'admin@teste.com', ?, 'admin')`, [hash]);
-    
-    console.log("✅ Tabelas e dados de teste criados com sucesso!");
   });
-} catch (dbError) {
-  console.error("❌ Erro ao conectar SQLite:", dbError.message);
-  // Fallback: objeto vazio para não quebrar
-  db = {};
 }
 
-// ✅ Multer ajustado para /tmp (compatível com Vercel)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = '/tmp/uploads';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const safeName = Date.now() + path.extname(file.originalname);
-    cb(null, safeName);
-  },
-});
-const upload = multer({ storage });
-
-// --------------------- ROTAS ---------------------
-
-// 🏠 Rota raiz
-app.get("/", (req, res) => {
-  res.json({ 
-    message: "🚀 API Mix Modas Online!",
-    status: "success",
-    database: "sqlite-memory",
-    timestamp: new Date().toISOString(),
-    note: "Banco em memória - dados resetam a cada deploy"
-  });
-});
-
-// 🩺 Health check
-app.get("/api/health", (req, res) => {
-  // Testar conexão com banco
-  if (db && db.all) {
-    db.get("SELECT COUNT(*) as count FROM produtos", (err, row) => {
-      if (err) {
-        res.json({ 
-          status: "error", 
-          database: "disconnected",
-          error: err.message 
-        });
-      } else {
-        res.json({ 
-          status: "healthy", 
-          database: "connected",
-          produtos_count: row.count,
-          type: "sqlite-memory"
-        });
-      }
-    });
-  } else {
-    res.json({ 
-      status: "degraded", 
-      database: "disconnected",
-      note: "Usando fallback em memória"
-    });
-  }
-});
-
-// 📦 GET - listar produtos
 app.get("/api/produtos", (req, res) => {
-  if (!db || !db.all) {
-    return res.status(500).json({ error: "Banco de dados não disponível" });
-  }
-  
   const categoria = req.query.categoria;
-  const sql = categoria
-    ? "SELECT * FROM produtos WHERE LOWER(categoria) = LOWER(?)"
-    : "SELECT * FROM produtos";
-  const params = categoria ? [categoria] : [];
-
-  db.all(sql, params, (err, rows) => {
-    if (err) {
-      console.error("❌ Erro ao listar produtos:", err.message);
-      return res.status(500).json({ error: "Erro ao buscar produtos" });
-    }
-    res.json(rows);
-  });
-});
-
-// ➕ POST - criar produto
-app.post("/api/produtos", (req, res) => {
-  if (!db || !db.run) {
-    return res.status(500).json({ error: "Banco de dados não disponível" });
-  }
-
-  const contentType = req.headers["content-type"] || "";
-  const isMultipart = contentType.includes("multipart/form-data");
-
-  const proceed = () => {
-    let { nome, descricao, preco, quantidade, categoria } = req.body;
-    const imagem = req.file ? `/tmp/uploads/${req.file.filename}` : (req.body.imagem || null);
-
-    preco = typeof preco === "string" ? preco.trim() : preco;
-    const precoNumerico = parseFloat(preco);
-    const quantidadeNumerica = parseInt(quantidade) || 0;
-
-    if (!nome || isNaN(precoNumerico)) {
-      return res.status(400).json({ error: "Nome e preço são obrigatórios" });
-    }
-
-    db.run(
-      "INSERT INTO produtos (nome, descricao, preco, quantidade, categoria, imagem) VALUES (?, ?, ?, ?, ?, ?)",
-      [nome, descricao || "", precoNumerico, quantidadeNumerica, categoria || "Outros", imagem],
-      function (err) {
+  if (categoria) {
+    db.all(
+      "SELECT * FROM produtos WHERE LOWER(categoria) = LOWER(?)",
+      [categoria],
+      (err, rows) => {
         if (err) {
-          console.error("❌ Erro SQLite:", err.message);
-          return res.status(500).json({ error: "Erro ao salvar produto" });
+          console.error(err);
+          return res.status(500).json({ error: "Erro no banco de dados" });
         }
-
-        const produto = {
-          id: this.lastID,
-          nome,
-          descricao: descricao || "",
-          preco: precoNumerico,
-          quantidade: quantidadeNumerica,
-          categoria: categoria || "Outros",
-          imagem,
-        };
-
-        res.json({ 
-          success: true, 
-          produto,
-          warning: "Dados em memória - serão perdidos no próximo deploy"
-        });
+        return res.json(rows || []);
       }
     );
-  };
-
-  if (isMultipart) {
-    upload.single("imagem")(req, res, (err) => {
-      if (err) return res.status(500).json({ error: "Erro no upload" });
-      proceed();
-    });
   } else {
-    proceed();
+    db.all("SELECT * FROM produtos", [], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Erro no banco de dados" });
+      }
+      return res.json(rows || []);
+    });
   }
 });
 
-// 👤 Cadastro de usuários
-app.post("/api/cadastro", (req, res) => {
-  if (!db || !db.run) {
-    return res.status(500).json({ error: "Banco de dados não disponível" });
+app.get("/api/lista_desejos", (req, res) => {
+  const email = req.query.email;
+  if (!email) return res.status(400).json({ error: "Email é obrigatório" });
+
+  const sql = `
+    SELECT p.* FROM lista_desejos ld
+    JOIN produtos p ON ld.produto_id = p.id
+    WHERE ld.usuario_email = ?
+  `;
+
+  db.all(sql, [email], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Erro no banco de dados" });
+    }
+    return res.json(rows || []);
+  });
+});
+
+app.post("/api/cadastro", async (req, res) => {
+  const { nome, email, senha, recaptcha } = req.body;
+
+  if (!nome || !email || !senha || !recaptcha) {
+    return res.status(400).json({ error: "Campos incompletos ou reCAPTCHA ausente" });
   }
 
-  const { nome, email, senha } = req.body;
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+  try {
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY || 'SUA_SECRET_KEY';
+    const googleVerify = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: recaptchaSecret,
+          response: recaptcha
+        }
+      }
+    );
+
+    if (!googleVerify.data.success) {
+      return res.status(400).json({ error: "Falha na validação do reCAPTCHA" });
+    }
+  } catch (error) {
+    console.error("Erro reCAPTCHA:", error);
+    return res.status(500).json({ error: "Erro ao validar reCAPTCHA" });
   }
 
-  const hash = bcrypt.hashSync(senha, 10);
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(senha, salt);
 
   db.run(
     "INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)",
     [nome, email, hash],
     function (err) {
       if (err) {
-        return res.status(500).json({ error: "Email já cadastrado" });
+        if (err.code === 'SQLITE_CONSTRAINT') {
+          return res.status(400).json({ error: "Email já cadastrado" });
+        }
+        console.error(err);
+        return res.status(500).json({ error: "Erro ao cadastrar usuário" });
       }
-      res.json({ 
-        success: true, 
-        message: "Usuário cadastrado com sucesso",
-        warning: "Dados em memória - serão perdidos no próximo deploy"
-      });
+      res.json({ success: true, message: "Usuário cadastrado com sucesso" });
     }
   );
 });
 
-// 🔐 Login
-app.post("/api/login", (req, res) => {
-  if (!db || !db.get) {
-    return res.status(500).json({ error: "Banco de dados não disponível" });
+app.post("/api/login", async (req, res) => {
+  const { email, senha, recaptcha } = req.body;
+
+  if (!email || !senha || !recaptcha) {
+    return res.status(400).json({ error: "Credenciais ou captcha ausentes" });
   }
 
-  const { email, senha } = req.body;
-  if (!email || !senha) {
-    return res.status(400).json({ error: "Email e senha são obrigatórios" });
+  try {
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY || 'SUA_SECRET_KEY';
+    const googleVerify = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      null,
+      {
+        params: {
+          secret: recaptchaSecret,
+          response: recaptcha
+        }
+      }
+    );
+
+    if (!googleVerify.data.success) {
+      return res.status(400).json({ error: "Captcha inválido" });
+    }
+  } catch (error) {
+    console.error("Erro reCAPTCHA:", error);
+    return res.status(500).json({ error: "Erro ao validar captcha" });
   }
 
   db.get("SELECT * FROM usuarios WHERE email = ?", [email], (err, user) => {
-    if (err) return res.status(500).json({ error: "Erro no servidor" });
-    if (!user) return res.status(401).json({ error: "Credenciais inválidas" });
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Erro no servidor" });
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: "Credenciais inválidas" });
+    }
 
     bcrypt.compare(senha, user.senha, (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Erro ao verificar senha" });
+      }
+      
       if (result) {
         res.json({ 
           success: true, 
           email: user.email, 
           role: user.role,
-          nome: user.nome
+          nome: user.nome 
         });
       } else {
         res.status(401).json({ error: "Credenciais inválidas" });
@@ -265,9 +244,41 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// ❌ Handler para rotas não encontradas
+app.get("/api/firebase-teste", async (req, res) => {
+  if (!firestore) {
+    return res.status(503).json({ error: "Firebase não configurado" });
+  }
+  
+  try {
+    const docRef = await firestore.collection("teste").add({
+      mensagem: "Conexão com Firebase funcionando!",
+      data: new Date().toISOString(),
+    });
+    res.json({ sucesso: true, id: docRef.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao conectar com o Firebase" });
+  }
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "online", 
+    timestamp: new Date().toISOString(),
+    database: "connected"
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: "Rota não encontrada" });
 });
 
-module.exports = app;
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Erro interno do servidor" });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🌍 Modo: ${process.env.NODE_ENV || 'desenvolvimento'}`);
+});
